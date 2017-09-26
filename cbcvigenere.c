@@ -13,13 +13,13 @@
 #define TEXT_WIDTH 80
 #define GBUFFER_SIZE_KB (5 * 1000)
 
-static char gbuffer[GBUFFER_SIZE_KB];
-static size_t gbuffer_len;
-static size_t gbuffer_pos;
-
 /* global buffer get char */
 int gbfgetc(FILE* stream)
 {
+	static char gbuffer[GBUFFER_SIZE_KB];
+	static size_t gbuffer_len;
+	static size_t gbuffer_pos;
+
 	if (gbuffer_pos >= gbuffer_len)
 	{
 		gbuffer_len = fread(gbuffer, sizeof (char), sizeof gbuffer, stream);
