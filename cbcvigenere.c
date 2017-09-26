@@ -38,9 +38,9 @@ int next_alpha(FILE* stream)
     return EOF;
 }
 
-int next_n_alphas(char* dest, int n, FILE* stream)
+size_t next_n_alphas(char* dest, size_t n, FILE* stream)
 {
-    int index;
+    size_t index;
     for (index = 0; index < n; ++index) {
         int c = next_alpha(stream);
         if (c == EOF)
@@ -50,7 +50,7 @@ int next_n_alphas(char* dest, int n, FILE* stream)
     return index;
 }
 
-void col_delim_putc(char c, int* n)
+void col_delim_putc(char c, size_t* n)
 {
     if (*n > 0 && *n % TEXT_WIDTH == 0)
         putchar('\n');
@@ -58,9 +58,9 @@ void col_delim_putc(char c, int* n)
     *n += 1;
 }
 
-void print_block(const char* block, int* n)
+void print_block(const char* block, size_t* n)
 {
-    for (int index = 0; block[index] != '\0'; ++index) {
+    for (size_t index = 0; block[index] != '\0'; ++index) {
         col_delim_putc(block[index], n);
     }
 }
@@ -72,21 +72,15 @@ char xor(char x, char y)
 
 void encrypt_block(char* block, const char* prev, const char* key)
 {
-    for (int index = 0; block[index] != '\0'; ++index) {
+    for (size_t index = 0; block[index] != '\0'; ++index) {
         block[index] = xor(xor(block[index], prev[index]), key[index]);
     }
 }
 
-int print_pt(const char* pt_path)
+size_t print_pt(FILE* pt)
 {
-    int n = 0;
+    size_t n = 0;
 
-    FILE* pt = fopen(pt_path, "r");
-    if (pt == NULL) {
-        fputs("Error: ", stderr);
-        perror(pt_path);
-        return -1;
-    }
     int c;
     while ((c = next_alpha(pt)) != EOF) {
         col_delim_putc(c, &n);
@@ -104,16 +98,10 @@ void pad_block(char* block, size_t from_index, char pad_c)
     }
 }
 
-int print_ct(const char* key, const char* iv, size_t b_size, const char* pt_path)
+size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
 {
-    int n = 0;
+    size_t n = 0;
 
-    FILE* pt = fopen(pt_path, "r");
-    if (pt == NULL) {
-        fputs("Error: ", stderr);
-        perror(pt_path);
-        return -1;
-    }
     char* block = calloc(b_size + 1, sizeof (char));
     char* prev = calloc(b_size + 1, sizeof (char));
     strcpy(prev, iv);
@@ -155,13 +143,19 @@ int main(int argc, char* argv[])
     const char* pt_path = argv[1];
     const char* key = argv[2];
     const char* iv = argv[3];
+
     size_t b_size = strlen(key);
+    FILE* pt = fopen(pt_path, "r");
 
     if (b_size != strlen(iv)) {
         fputs("Error: Key and init vector must be equal length\n", stderr);
         return EXIT_FAILURE;
     } else if (!(are_lower(key) && are_lower(iv))) {
         fputs("Error: Key and init vector must be lowercase letters\n", stderr);
+        return EXIT_FAILURE;
+    } else if (!pt) {
+        fputs("Error: ", stderr);
+        perror(pt_path);
         return EXIT_FAILURE;
     }
 
@@ -170,12 +164,12 @@ int main(int argc, char* argv[])
     printf("Vigenere keyword: %s\n", key);
     printf("Initialization vector: %s\n", iv);
     puts("\nClean Plaintext:\n");
-    int pt_len = print_pt(pt_path);
+    size_t pt_len = print_pt(pt);
     puts("\nCiphertext:\n");
-    int ct_len = print_ct(key, iv, b_size, pt_path);
-    printf("\nNumber of characters in clean plaintext file: %d\n", pt_len);
+    size_t ct_len = print_ct(key, iv, b_size, pt);
+    printf("\nNumber of characters in clean plaintext file: %lu\n", pt_len);
     printf("Block size = %lu\n", b_size);
-    printf("Number of pad characters added: %d\n", ct_len - pt_len);
+    printf("Number of pad characters added: %lu\n", ct_len - pt_len);
 
-    return (pt_len >= 0 && ct_len >= 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
