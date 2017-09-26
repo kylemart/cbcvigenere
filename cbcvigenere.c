@@ -17,18 +17,14 @@ static char gbuffer[GBUFFER_SIZE_KB];
 static size_t gbuffer_len;
 static size_t gbuffer_pos;
 
-/* global buffer update */
-void gbfupdate(FILE* stream)
-{
-	gbuffer_len = fread(gbuffer, sizeof (char), sizeof gbuffer, stream);
-	gbuffer_pos = 0;
-}
-
 /* global buffer get char */
 int gbfgetc(FILE* stream)
 {
 	if (gbuffer_pos >= gbuffer_len)
-		gbfupdate(stream);
+	{
+		gbuffer_len = fread(gbuffer, sizeof (char), sizeof gbuffer, stream);
+		gbuffer_pos = 0;
+	}
 	return (gbuffer_len > 0) ? gbuffer[gbuffer_pos++] : EOF;
 }
 
