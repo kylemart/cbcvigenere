@@ -82,7 +82,7 @@ size_t print_pt(FILE* pt)
 {
     size_t n = 0;
 
-	long int pt_offset = ftell(pt);
+    long int pt_offset = ftell(pt);
 
     int c;
     while ((c = next_alpha(pt)) != EOF) {
@@ -90,7 +90,7 @@ size_t print_pt(FILE* pt)
     }
     putchar('\n');
 
-	fseek(pt, pt_offset, SEEK_SET);
+    fseek(pt, pt_offset, SEEK_SET);
 
     return n;
 }
@@ -106,7 +106,7 @@ size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
 {
     size_t n = 0;
 
-	long int pt_offset = ftell(pt);
+    long int pt_offset = ftell(pt);
 
     char* block = calloc(b_size + 1, sizeof (char));
     char* prev = calloc(b_size + 1, sizeof (char));
@@ -125,7 +125,7 @@ size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
     free(block);
     free(prev);
 
-	fseek(pt, pt_offset, SEEK_SET);
+    fseek(pt, pt_offset, SEEK_SET);
 
     return n;
 }
@@ -172,9 +172,9 @@ int main(int argc, char* argv[])
     printf("Initialization vector: %s\n", iv);
     puts("\nClean Plaintext:\n");
     size_t pt_len = print_pt(pt);
-	puts("\nCiphertext:\n");
-	size_t ct_len = print_ct(key, iv, b_size, pt);
-	printf("\nNumber of characters in clean plaintext file: %lu\n", pt_len);
+    puts("\nCiphertext:\n");
+    size_t ct_len = print_ct(key, iv, b_size, pt);
+    printf("\nNumber of characters in clean plaintext file: %lu\n", pt_len);
     printf("Block size = %lu\n", b_size);
     printf("Number of pad characters added: %lu\n", ct_len - pt_len);
 
