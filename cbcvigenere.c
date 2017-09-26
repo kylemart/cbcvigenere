@@ -136,10 +136,10 @@ int print_ciphertext(char* key, char* init_vector, size_t b_size, char* pt_path)
     return n;
 }
 
-int are_lower_alphas(char* str)
+int are_lower(char* str)
 {
     for (int index = 0; str[index] != '\0'; ++index) {
-        if (!(isalpha(str[index]) && islower(str[index])))
+        if (!islower(str[index]))
             return 0;
     }
     return 1;
@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
     char* init_vector = argv[3];
     size_t b_size = strlen(key);
 
-    if (!(are_lower_alphas(key) && are_lower_alphas(init_vector))) {
+    if (!(are_lower(key) && are_lower(init_vector))) {
         fputs("Error: Key and init vector must be lowercase letters\n", stderr);
         return EXIT_FAILURE;
     } else if (b_size != strlen(init_vector)) {
