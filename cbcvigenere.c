@@ -13,178 +13,175 @@
 #define TEXT_WIDTH 80
 #define BUFFER_CAPACITY_KB (5 * 1024)
 
-static char buffer[BUFFER_CAPACITY_KB];
 static size_t buffer_size;
-static size_t buffer_pos;
+static size_t buffer_index;
+static char buffer[BUFFER_CAPACITY_KB];
 
-int bfgetc(FILE* stream)
+/* warning: buffer must be depleated before switching streams */
+int buffer_getc(FILE* stream)
 {
-	if (buffer_pos >= buffer_size)
-	{
+	if (buffer_index >= buffer_size) {
 		buffer_size = fread(buffer, sizeof (char), sizeof buffer, stream);
-		buffer_pos = 0;
+		buffer_index = 0;
 	}
-	return (buffer_size > 0) ? buffer[buffer_pos++] : EOF;
+	return (buffer_size > 0) ? buffer[buffer_index++] : EOF;
 }
 
-/* scan stream for alpha char */
-int fscanalpha(FILE* stream)
+int next_alpha(FILE* stream)
 {
-    int ch;
-    while ((ch = bfgetc(stream)) != EOF)
-        if (isalpha(ch))
+    int c;
+    while ((c = buffer_getc(stream)) != EOF) {
+        if (isalpha(c))
+            return tolower(c);
+	}
+    return EOF;
+}
+
+int next_n_alphas(char* cbuff, int n, FILE* stream)
+{
+    int index;
+    for (index = 0; index < n; ++index) {
+        int c = next_alpha(stream);
+        if (c == EOF)
             break;
-    return tolower(ch);
-}
-
-/* scan stream for n-alphas */
-int fscannalphas(char* cbuff, int n, FILE* stream)
-{
-    int i;
-    for (i = 0; i < n; ++i) {
-        int ch = fscanalpha(stream);
-        if (ch == EOF)
-            return i;
-        cbuff[i] = ch;
+        cbuff[index] = c;
     }
-    return i;
+    return index;
 }
 
-/* column-delimited print char */
-void cdputc(int c, int* len)
+void col_delim_putc(char c, int* n)
 {
-    if (*len > 0 && *len % TEXT_WIDTH == 0)
+    if (*n > 0 && *n % TEXT_WIDTH == 0)
         putchar('\n');
     putchar(c);
-    *len += 1;
+    *n += 1;
 }
 
-/* column-delimited print n-chars */
-void cdnputs(const char* str, int n, int* len)
+void print_block(char* block, int* n)
 {
-    for (int i = 0; i < n; ++i)
-        cdputc(str[i], len);
+    for (int index = 0; block[index] != '\0'; ++index) {
+		col_delim_putc(block[index], n);
+	}
 }
 
-/* exclusive or */
-int xor(char x, char y)
+char xor(char x, char y)
 {
     return (char) (((x - 'a' + y - 'a') % 26) + 'a');
 }
 
-/* block encrypt */
-void bencrypt(char* block, const char* previous, const char* keyword, int bsize)
+void encrypt_block(char* block, char* prev, char* key)
 {
-    for (int i = 0; i < bsize; ++i)
-        block[i] = xor(xor(block[i], previous[i]), keyword[i]);
+    for (int index = 0; block[index] != '\0'; ++index) {
+        block[index] = xor(xor(block[index], prev[index]), key[index]);
+	}
 }
 
-/* print plaintext */
-int printpt(const char* pt_filename)
+int print_plaintext(char* pt_path)
 {
-    FILE* pt = fopen(pt_filename, "r");
+    FILE* pt = fopen(pt_path, "r");
     if (pt == NULL) {
         fputs("Error: ", stderr);
-        perror(pt_filename);
+        perror(pt_path);
         return -1;
     }
 
-	buffer_size = 0;
-    int len = 0;
+    int n = 0;
 
-    int ch;
-    while ((ch = fscanalpha(pt)) != EOF)
-        cdputc(ch, &len);
+	int c;
+    while ((c = next_alpha(pt)) != EOF) {
+        col_delim_putc(c, &n);
+	}
     putchar('\n');
+
     fclose(pt);
 
-    return len;
+	return n;
 }
 
-/* print ciphertext */
-int printct(const char* keyword, const char* init_vector, size_t bsize, const char* pt_filename)
+void pad_block(char* block, size_t from_index, char pad_c)
 {
-    FILE* pt = fopen(pt_filename, "r");
+	for (int index = from_index; block[index] != '\0'; ++index) {
+		block[index] = pad_c;
+	}
+}
+
+int print_ciphertext(char* key, char* init_vector, size_t b_size, char* pt_path)
+{
+    FILE* pt = fopen(pt_path, "r");
     if (pt == NULL) {
         fputs("Error: ", stderr);
-        perror(pt_filename);
+        perror(pt_path);
         return -1;
     }
 
-	buffer_size = 0;
-	int len = 0;
+	int n = 0;
 
-    char* current = malloc(bsize);
-    char* previous = malloc(bsize);
-    strncpy(previous, init_vector, bsize);
-
-    int nread;
-    while ((nread = fscannalphas(current, bsize, pt)) > 0) {
-        if (nread < bsize) {
-            int pad_len = bsize - nread;
-            memset(current + nread, 'x', pad_len);
-        }
-        bencrypt(current, previous, keyword, bsize);
-        cdnputs(current, bsize, &len);
-        strncpy(previous, current, bsize);
+	char* block = calloc(b_size + 1, sizeof (char));
+    char* prev = calloc(b_size + 1, sizeof (char));
+    strcpy(prev, init_vector);
+    int read;
+    while ((read = next_n_alphas(block, b_size, pt)) > 0) {
+		if (read < b_size) {
+			pad_block(block, read, 'x');
+		}
+        encrypt_block(block, prev, key);
+		print_block(block, &n);
+		strcpy(prev, block);
     }
     putchar('\n');
+    free(block);
+    free(prev);
 
-    free(current);
-    free(previous);
     fclose(pt);
 
-    return len;
+    return n;
 }
 
-/* is lowercase alphas */
-int isloweralphas(const char *str)
+int are_lower_alphas(char *str)
 {
-    while (*str != '\0') {
-        if (!(isalpha(*str) && islower(*str)))
+    for (int index = 0; str[index] != '\0'; ++index) {
+        if (!(isalpha(str[index]) && islower(str[index])))
             return 0;
-        ++str;
     }
     return 1;
 }
 
-/* program entry point */
 int main(int argc, char* argv[])
 {
     if (argc != 4) {
         fputs("Usage:\n", stderr);
-        fprintf(stderr, "\t%s [filename] [keyword] [init_vector]\n", argv[0]);
+        fprintf(stderr, "\t%s [filename] [key] [init_vector]\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    char* pt_filename = argv[1];
-    char* keyword = argv[2];
+    char* pt_path = argv[1];
+    char* key = argv[2];
     char* init_vector = argv[3];
-    size_t bsize = strlen(keyword);
+    size_t b_size = strlen(key);
 
-    if (!(isloweralphas(keyword) && isloweralphas(init_vector))) {
-        fputs("Error: Keyword and init vector must be lowercase letters\n", stderr);
+    if (!(are_lower_alphas(key) && are_lower_alphas(init_vector))) {
+        fputs("Error: Key and init vector must be lowercase letters\n", stderr);
         return EXIT_FAILURE;
-    } else if (bsize != strlen(init_vector)) {
-        fputs("Error: Keyword and init vector must be equal length\n", stderr);
+    } else if (b_size != strlen(init_vector)) {
+        fputs("Error: Key and init vector must be equal length\n", stderr);
         return EXIT_FAILURE;
     }
 
     printf("CBC Vigenere by %s\n", AUTHOR);
-    printf("Plaintext file name: %s\n", pt_filename);
-    printf("Vigenere keyword: %s\n", keyword);
+    printf("Plaintext file name: %s\n", pt_path);
+    printf("Vigenere keyword: %s\n", key);
     printf("Initialization vector: %s\n", init_vector);
     putchar('\n');
     puts("Clean Plaintext:");
     putchar('\n');
-    int pt_len = printpt(pt_filename);
+    int pt_len = print_plaintext(pt_path);
     putchar('\n');
     puts("Ciphertext:");
     putchar('\n');
-    int ct_len = printct(keyword, init_vector, bsize, pt_filename);
+    int ct_len = print_ciphertext(key, init_vector, b_size, pt_path);
     putchar('\n');
     printf("Number of characters in clean plaintext file: %d\n", pt_len);
-    printf("Block size = %lu\n", bsize);
+    printf("Block size = %lu\n", b_size);
     printf("Number of pad characters added: %d\n", ct_len - pt_len);
 
     return (pt_len >= 0 && ct_len >= 0) ? EXIT_SUCCESS : EXIT_FAILURE;
