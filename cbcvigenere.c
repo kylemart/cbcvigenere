@@ -79,21 +79,19 @@ void encrypt_block(char* block, char* prev, char* key)
 
 int print_plaintext(char* pt_path)
 {
+    int n = 0;
+
     FILE* pt = fopen(pt_path, "r");
     if (pt == NULL) {
         fputs("Error: ", stderr);
         perror(pt_path);
         return -1;
     }
-
-    int n = 0;
-
     int c;
     while ((c = next_alpha(pt)) != EOF) {
         col_delim_putc(c, &n);
     }
     putchar('\n');
-
     fclose(pt);
 
     return n;
@@ -108,18 +106,18 @@ void pad_block(char* block, size_t from_index, char pad_c)
 
 int print_ciphertext(char* key, char* init_vector, size_t b_size, char* pt_path)
 {
+    int n = 0;
+
     FILE* pt = fopen(pt_path, "r");
     if (pt == NULL) {
         fputs("Error: ", stderr);
         perror(pt_path);
         return -1;
     }
-
-    int n = 0;
-
     char* block = calloc(b_size + 1, sizeof (char));
     char* prev = calloc(b_size + 1, sizeof (char));
     strcpy(prev, init_vector);
+
     int read;
     while ((read = next_n_alphas(block, b_size, pt)) > 0) {
         if (read < b_size) {
@@ -130,9 +128,9 @@ int print_ciphertext(char* key, char* init_vector, size_t b_size, char* pt_path)
         strcpy(prev, block);
     }
     putchar('\n');
+
     free(block);
     free(prev);
-
     fclose(pt);
 
     return n;
