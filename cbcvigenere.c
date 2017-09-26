@@ -11,27 +11,27 @@
 
 #define AUTHOR "Kyle Martinez"
 #define TEXT_WIDTH 80
-#define BUFFER_SIZE_KB (5 * 1024)
+#define BUFFER_CAPACITY_KB (5 * 1024)
 
-/* global buffer get char */
-int gbfgetc(FILE* stream)
+/* buffer get char */
+int bfgetc(FILE* stream)
 {
-	static char buffer[BUFFER_SIZE_KB];
-	static size_t buffer_len;
-	static size_t buffer_pos;
-	if (buffer_pos >= buffer_len)
+	static char buffer[BUFFER_CAPACITY_KB];
+	static size_t size;
+	static size_t pos;
+	if (pos >= size)
 	{
-		buffer_len = fread(buffer, sizeof (char), sizeof buffer, stream);
-		buffer_pos = 0;
+		size = fread(buffer, sizeof (char), sizeof buffer, stream);
+		pos = 0;
 	}
-	return (buffer_len > 0) ? buffer[buffer_pos++] : EOF;
+	return (size > 0) ? buffer[pos++] : EOF;
 }
 
 /* scan stream for alpha char */
 int fscanalpha(FILE* stream)
 {
     int ch;
-    while ((ch = gbfgetc(stream)) != EOF)
+    while ((ch = bfgetc(stream)) != EOF)
         if (isalpha(ch))
             break;
     return tolower(ch);
