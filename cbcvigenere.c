@@ -13,18 +13,18 @@
 #define TEXT_WIDTH 80
 #define BUFFER_CAPACITY_KB (5 * 1024)
 
-/* buffer get char */
+static char buffer[BUFFER_CAPACITY_KB];
+static size_t buffer_size;
+static size_t buffer_pos;
+
 int bfgetc(FILE* stream)
 {
-	static char buffer[BUFFER_CAPACITY_KB];
-	static size_t size;
-	static size_t pos;
-	if (pos >= size)
+	if (buffer_pos >= buffer_size)
 	{
-		size = fread(buffer, sizeof (char), sizeof buffer, stream);
-		pos = 0;
+		buffer_size = fread(buffer, sizeof (char), sizeof buffer, stream);
+		buffer_pos = 0;
 	}
-	return (size > 0) ? buffer[pos++] : EOF;
+	return (buffer_size > 0) ? buffer[buffer_pos++] : EOF;
 }
 
 /* scan stream for alpha char */
@@ -89,6 +89,7 @@ int printpt(const char* pt_filename)
         return -1;
     }
 
+	buffer_size = 0;
     int len = 0;
 
     int ch;
@@ -110,11 +111,12 @@ int printct(const char* keyword, const char* init_vector, size_t bsize, const ch
         return -1;
     }
 
+	buffer_size = 0;
+	int len = 0;
+
     char* current = malloc(bsize);
     char* previous = malloc(bsize);
     strncpy(previous, init_vector, bsize);
-
-    int len = 0;
 
     int nread;
     while ((nread = fscannalphas(current, bsize, pt)) > 0) {
