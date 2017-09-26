@@ -67,7 +67,8 @@ void print_block(const char* block, size_t* n)
 
 char xor(char x, char y)
 {
-    return (char) (((x - 'a' + y - 'a') % 26) + 'a');
+	const int ALPHABET_LENGTH = 26;
+    return (char) (((x - 'a' + y - 'a') % ALPHABET_LENGTH) + 'a');
 }
 
 void encrypt_block(char* block, const char* prev, const char* key)
@@ -94,7 +95,7 @@ size_t print_pt(FILE* pt)
 
 void pad_block(char* block, size_t from_index, char pad_c)
 {
-    for (int index = from_index; block[index] != '\0'; ++index) {
+    for (size_t index = from_index; block[index] != '\0'; ++index) {
         block[index] = pad_c;
     }
 }
