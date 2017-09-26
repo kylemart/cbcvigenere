@@ -160,7 +160,7 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    char* filename = argv[1];
+    char* pt_filename = argv[1];
     char* keyword = argv[2];
     char* init_vector = argv[3];
     size_t bsize = strlen(keyword);
@@ -174,17 +174,17 @@ int main(int argc, char* argv[])
     }
 
     printf("CBC Vigenere by %s\n", AUTHOR);
-    printf("Plaintext file name: %s\n", filename);
+    printf("Plaintext file name: %s\n", pt_filename);
     printf("Vigenere keyword: %s\n", keyword);
     printf("Initialization vector: %s\n", init_vector);
     putchar('\n');
     puts("Clean Plaintext:");
     putchar('\n');
-    int pt_len = printpt(filename);
+    int pt_len = printpt(pt_filename);
     putchar('\n');
     puts("Ciphertext:");
     putchar('\n');
-    int ct_len = printct(keyword, init_vector, bsize, filename);
+    int ct_len = printct(keyword, init_vector, bsize, pt_filename);
     putchar('\n');
     printf("Number of characters in clean plaintext file: %d\n", pt_len);
     printf("Block size = %lu\n", bsize);
