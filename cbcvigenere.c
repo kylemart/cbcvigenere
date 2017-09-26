@@ -15,15 +15,15 @@
 
 int buffer_getc(FILE* stream)
 {
-	static size_t buffer_size;
-	static size_t buffer_index;
-	static char buffer[BUFFER_CAPACITY_KB];
-	static FILE* buffered;
+    static size_t buffer_size;
+    static size_t buffer_index;
+    static char buffer[BUFFER_CAPACITY_KB];
+    static FILE* buffered;
 
     if (buffered != stream || buffer_index >= buffer_size) {
         buffer_size = fread(buffer, sizeof (char), sizeof buffer, stream);
         buffer_index = 0;
-		buffered = stream;
+        buffered = stream;
     }
     return (buffer_size > 0) ? buffer[buffer_index++] : EOF;
 }
