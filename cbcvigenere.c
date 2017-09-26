@@ -18,20 +18,23 @@ static size_t gbuffer_len;
 static size_t gbuffer_pos;
 
 /* global buffer update */
-void gbfupdate(FILE* stream) {
+void gbfupdate(FILE* stream)
+{
 	gbuffer_len = fread(gbuffer, sizeof (char), sizeof gbuffer, stream);
 	gbuffer_pos = 0;
 }
 
 /* global buffer get char */
-int gbfgetc(FILE* stream) {
+int gbfgetc(FILE* stream)
+{
 	if (gbuffer_pos >= gbuffer_len)
 		gbfupdate(stream);
 	return (gbuffer_len > 0) ? gbuffer[gbuffer_pos++] : EOF;
 }
 
 /* scan stream for alpha char */
-int fscanalpha(FILE* stream) {
+int fscanalpha(FILE* stream)
+{
     int ch;
     while ((ch = gbfgetc(stream)) != EOF)
         if (isalpha(ch))
@@ -40,7 +43,8 @@ int fscanalpha(FILE* stream) {
 }
 
 /* scan stream for n-alphas */
-int fscannalphas(char* cbuff, int n, FILE* stream) {
+int fscannalphas(char* cbuff, int n, FILE* stream)
+{
     int i;
     for (i = 0; i < n; ++i) {
         int ch = fscanalpha(stream);
@@ -52,7 +56,8 @@ int fscannalphas(char* cbuff, int n, FILE* stream) {
 }
 
 /* column-delimited print char */
-void cdputc(int c, int* len) {
+void cdputc(int c, int* len)
+{
     if (*len > 0 && *len % TEXT_WIDTH == 0)
         putchar('\n');
     putchar(c);
@@ -60,24 +65,28 @@ void cdputc(int c, int* len) {
 }
 
 /* column-delimited print n-chars */
-void cdnputs(const char* str, int n, int* len) {
+void cdnputs(const char* str, int n, int* len)
+{
     for (int i = 0; i < n; ++i)
         cdputc(str[i], len);
 }
 
 /* exclusive or */
-int xor(char x, char y) {
+int xor(char x, char y)
+{
     return (char) (((x - 'a' + y - 'a') % 26) + 'a');
 }
 
 /* block encrypt */
-void bencrypt(char* block, const char* previous, const char* keyword, int bsize) {
+void bencrypt(char* block, const char* previous, const char* keyword, int bsize)
+{
     for (int i = 0; i < bsize; ++i)
         block[i] = xor(xor(block[i], previous[i]), keyword[i]);
 }
 
 /* print plaintext */
-int printpt(const char* pt_filename) {
+int printpt(const char* pt_filename)
+{
     FILE* pt = fopen(pt_filename, "r");
     if (pt == NULL) {
         fputs("Error: ", stderr);
@@ -97,7 +106,8 @@ int printpt(const char* pt_filename) {
 }
 
 /* print ciphertext */
-int printct(const char* keyword, const char* init_vector, size_t bsize, const char* pt_filename) {
+int printct(const char* keyword, const char* init_vector, size_t bsize, const char* pt_filename)
+{
     FILE* pt = fopen(pt_filename, "r");
     if (pt == NULL) {
         fputs("Error: ", stderr);
@@ -131,7 +141,8 @@ int printct(const char* keyword, const char* init_vector, size_t bsize, const ch
 }
 
 /* is lowercase alphas */
-int isloweralphas(const char *str) {
+int isloweralphas(const char *str)
+{
     while (*str != '\0') {
         if (!(isalpha(*str) && islower(*str)))
             return 0;
@@ -141,7 +152,8 @@ int isloweralphas(const char *str) {
 }
 
 /* program entry point */
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     if (argc != 4) {
         fputs("Usage:\n", stderr);
         fprintf(stderr, "\t%s [filename] [keyword] [init_vector]\n", argv[0]);
