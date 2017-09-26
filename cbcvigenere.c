@@ -13,16 +13,17 @@
 #define TEXT_WIDTH 80
 #define BUFFER_CAPACITY_KB (5 * 1024)
 
-static size_t buffer_size;
-static size_t buffer_index;
-static char buffer[BUFFER_CAPACITY_KB];
-
-/* warning: buffer must be depleated before switching streams */
 int buffer_getc(FILE* stream)
 {
-    if (buffer_index >= buffer_size) {
+	static size_t buffer_size;
+	static size_t buffer_index;
+	static char buffer[BUFFER_CAPACITY_KB];
+	static FILE* buffered;
+
+    if (buffered != stream || buffer_index >= buffer_size) {
         buffer_size = fread(buffer, sizeof (char), sizeof buffer, stream);
         buffer_index = 0;
+		buffered = stream;
     }
     return (buffer_size > 0) ? buffer[buffer_index++] : EOF;
 }
