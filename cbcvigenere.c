@@ -20,11 +20,11 @@ static char buffer[BUFFER_CAPACITY_KB];
 /* warning: buffer must be depleated before switching streams */
 int buffer_getc(FILE* stream)
 {
-	if (buffer_index >= buffer_size) {
-		buffer_size = fread(buffer, sizeof (char), sizeof buffer, stream);
-		buffer_index = 0;
-	}
-	return (buffer_size > 0) ? buffer[buffer_index++] : EOF;
+    if (buffer_index >= buffer_size) {
+        buffer_size = fread(buffer, sizeof (char), sizeof buffer, stream);
+        buffer_index = 0;
+    }
+    return (buffer_size > 0) ? buffer[buffer_index++] : EOF;
 }
 
 int next_alpha(FILE* stream)
@@ -33,7 +33,7 @@ int next_alpha(FILE* stream)
     while ((c = buffer_getc(stream)) != EOF) {
         if (isalpha(c))
             return tolower(c);
-	}
+    }
     return EOF;
 }
 
@@ -60,8 +60,8 @@ void col_delim_putc(char c, int* n)
 void print_block(char* block, int* n)
 {
     for (int index = 0; block[index] != '\0'; ++index) {
-		col_delim_putc(block[index], n);
-	}
+        col_delim_putc(block[index], n);
+    }
 }
 
 char xor(char x, char y)
@@ -73,7 +73,7 @@ void encrypt_block(char* block, char* prev, char* key)
 {
     for (int index = 0; block[index] != '\0'; ++index) {
         block[index] = xor(xor(block[index], prev[index]), key[index]);
-	}
+    }
 }
 
 int print_plaintext(char* pt_path)
@@ -87,22 +87,22 @@ int print_plaintext(char* pt_path)
 
     int n = 0;
 
-	int c;
+    int c;
     while ((c = next_alpha(pt)) != EOF) {
         col_delim_putc(c, &n);
-	}
+    }
     putchar('\n');
 
     fclose(pt);
 
-	return n;
+    return n;
 }
 
 void pad_block(char* block, size_t from_index, char pad_c)
 {
-	for (int index = from_index; block[index] != '\0'; ++index) {
-		block[index] = pad_c;
-	}
+    for (int index = from_index; block[index] != '\0'; ++index) {
+        block[index] = pad_c;
+    }
 }
 
 int print_ciphertext(char* key, char* init_vector, size_t b_size, char* pt_path)
@@ -114,19 +114,19 @@ int print_ciphertext(char* key, char* init_vector, size_t b_size, char* pt_path)
         return -1;
     }
 
-	int n = 0;
+    int n = 0;
 
-	char* block = calloc(b_size + 1, sizeof (char));
+    char* block = calloc(b_size + 1, sizeof (char));
     char* prev = calloc(b_size + 1, sizeof (char));
     strcpy(prev, init_vector);
     int read;
     while ((read = next_n_alphas(block, b_size, pt)) > 0) {
-		if (read < b_size) {
-			pad_block(block, read, 'x');
-		}
+        if (read < b_size) {
+            pad_block(block, read, 'x');
+        }
         encrypt_block(block, prev, key);
-		print_block(block, &n);
-		strcpy(prev, block);
+        print_block(block, &n);
+        strcpy(prev, block);
     }
     putchar('\n');
     free(block);
