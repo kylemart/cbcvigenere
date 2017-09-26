@@ -15,17 +15,17 @@
 
 int buffer_getc(FILE* stream)
 {
-    static size_t buffer_size;
-    static size_t buffer_index;
-    static char buffer[BUFFER_CAPACITY_KB];
+    static size_t size;
+    static size_t index;
     static FILE* buffered;
+    static char buffer[BUFFER_CAPACITY_KB];
 
-    if (buffered != stream || buffer_index >= buffer_size) {
-        buffer_size = fread(buffer, sizeof (char), sizeof buffer, stream);
-        buffer_index = 0;
+    if (buffered != stream || index >= size) {
+        size = fread(buffer, sizeof (char), sizeof buffer, stream);
+        index = 0;
         buffered = stream;
     }
-    return (buffer_size > 0) ? buffer[buffer_index++] : EOF;
+    return (size > 0) ? buffer[index++] : EOF;
 }
 
 int next_alpha(FILE* stream)
@@ -38,14 +38,14 @@ int next_alpha(FILE* stream)
     return EOF;
 }
 
-int next_n_alphas(char* cbuff, int n, FILE* stream)
+int next_n_alphas(char* dest, int n, FILE* stream)
 {
     int index;
     for (index = 0; index < n; ++index) {
         int c = next_alpha(stream);
         if (c == EOF)
             break;
-        cbuff[index] = c;
+        dest[index] = c;
     }
     return index;
 }
@@ -58,7 +58,7 @@ void col_delim_putc(char c, int* n)
     *n += 1;
 }
 
-void print_block(char* block, int* n)
+void print_block(const char* block, int* n)
 {
     for (int index = 0; block[index] != '\0'; ++index) {
         col_delim_putc(block[index], n);
@@ -70,14 +70,14 @@ char xor(char x, char y)
     return (char) (((x - 'a' + y - 'a') % 26) + 'a');
 }
 
-void encrypt_block(char* block, char* prev, char* key)
+void encrypt_block(char* block, const char* prev, const char* key)
 {
     for (int index = 0; block[index] != '\0'; ++index) {
         block[index] = xor(xor(block[index], prev[index]), key[index]);
     }
 }
 
-int print_plaintext(char* pt_path)
+int print_pt(const char* pt_path)
 {
     int n = 0;
 
@@ -104,7 +104,7 @@ void pad_block(char* block, size_t from_index, char pad_c)
     }
 }
 
-int print_ciphertext(char* key, char* init_vector, size_t b_size, char* pt_path)
+int print_ct(const char* key, const char* iv, size_t b_size, const char* pt_path)
 {
     int n = 0;
 
@@ -116,13 +116,12 @@ int print_ciphertext(char* key, char* init_vector, size_t b_size, char* pt_path)
     }
     char* block = calloc(b_size + 1, sizeof (char));
     char* prev = calloc(b_size + 1, sizeof (char));
-    strcpy(prev, init_vector);
+    strcpy(prev, iv);
 
     int read;
     while ((read = next_n_alphas(block, b_size, pt)) > 0) {
-        if (read < b_size) {
+        if (read < b_size)
             pad_block(block, read, 'x');
-        }
         encrypt_block(block, prev, key);
         print_block(block, &n);
         strcpy(prev, block);
@@ -136,7 +135,7 @@ int print_ciphertext(char* key, char* init_vector, size_t b_size, char* pt_path)
     return n;
 }
 
-int are_lower(char* str)
+int are_lower(const char* str)
 {
     for (int index = 0; str[index] != '\0'; ++index) {
         if (!islower(str[index]))
@@ -153,15 +152,15 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    char* pt_path = argv[1];
-    char* key = argv[2];
-    char* init_vector = argv[3];
+    const char* pt_path = argv[1];
+    const char* key = argv[2];
+    const char* iv = argv[3];
     size_t b_size = strlen(key);
 
-    if (!(are_lower(key) && are_lower(init_vector))) {
+    if (!(are_lower(key) && are_lower(iv))) {
         fputs("Error: Key and init vector must be lowercase letters\n", stderr);
         return EXIT_FAILURE;
-    } else if (b_size != strlen(init_vector)) {
+    } else if (b_size != strlen(iv)) {
         fputs("Error: Key and init vector must be equal length\n", stderr);
         return EXIT_FAILURE;
     }
@@ -169,15 +168,11 @@ int main(int argc, char* argv[])
     printf("CBC Vigenere by %s\n", AUTHOR);
     printf("Plaintext file name: %s\n", pt_path);
     printf("Vigenere keyword: %s\n", key);
-    printf("Initialization vector: %s\n", init_vector);
-    putchar('\n');
-    puts("Clean Plaintext:");
-    putchar('\n');
-    int pt_len = print_plaintext(pt_path);
-    putchar('\n');
-    puts("Ciphertext:");
-    putchar('\n');
-    int ct_len = print_ciphertext(key, init_vector, b_size, pt_path);
+    printf("Initialization vector: %s\n", iv);
+    puts("\nClean Plaintext:\n");
+    int pt_len = print_pt(pt_path);
+    puts("\nCiphertext:\n");
+    int ct_len = print_ct(key, iv, b_size, pt_path);
     putchar('\n');
     printf("Number of characters in clean plaintext file: %d\n", pt_len);
     printf("Block size = %lu\n", b_size);
