@@ -173,8 +173,7 @@ int main(int argc, char* argv[])
     int pt_len = print_pt(pt_path);
     puts("\nCiphertext:\n");
     int ct_len = print_ct(key, iv, b_size, pt_path);
-    putchar('\n');
-    printf("Number of characters in clean plaintext file: %d\n", pt_len);
+    printf("\nNumber of characters in clean plaintext file: %d\n", pt_len);
     printf("Block size = %lu\n", b_size);
     printf("Number of pad characters added: %d\n", ct_len - pt_len);
 
