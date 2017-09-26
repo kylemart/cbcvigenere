@@ -157,11 +157,11 @@ int main(int argc, char* argv[])
     const char* iv = argv[3];
     size_t b_size = strlen(key);
 
-    if (!(are_lower(key) && are_lower(iv))) {
-        fputs("Error: Key and init vector must be lowercase letters\n", stderr);
-        return EXIT_FAILURE;
-    } else if (b_size != strlen(iv)) {
+	if (b_size != strlen(iv)) {
         fputs("Error: Key and init vector must be equal length\n", stderr);
+        return EXIT_FAILURE;
+    } else if (!(are_lower(key) && are_lower(iv))) {
+        fputs("Error: Key and init vector must be lowercase letters\n", stderr);
         return EXIT_FAILURE;
     }
 
