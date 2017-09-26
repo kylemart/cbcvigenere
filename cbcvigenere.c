@@ -86,7 +86,8 @@ size_t print_pt(FILE* pt)
         col_delim_putc(c, &n);
     }
     putchar('\n');
-    fclose(pt);
+
+    rewind(pt);
 
     return n;
 }
@@ -118,7 +119,8 @@ size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
 
     free(block);
     free(prev);
-    fclose(pt);
+
+    rewind(pt);
 
     return n;
 }
@@ -170,6 +172,8 @@ int main(int argc, char* argv[])
     printf("\nNumber of characters in clean plaintext file: %lu\n", pt_len);
     printf("Block size = %lu\n", b_size);
     printf("Number of pad characters added: %lu\n", ct_len - pt_len);
+
+    fclose(pt);
 
     return EXIT_SUCCESS;
 }
