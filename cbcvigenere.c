@@ -137,7 +137,7 @@ int print_ciphertext(char* key, char* init_vector, size_t b_size, char* pt_path)
     return n;
 }
 
-int are_lower_alphas(char *str)
+int are_lower_alphas(char* str)
 {
     for (int index = 0; str[index] != '\0'; ++index) {
         if (!(isalpha(str[index]) && islower(str[index])))
