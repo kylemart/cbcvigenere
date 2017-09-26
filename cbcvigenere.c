@@ -19,7 +19,6 @@ int gbfgetc(FILE* stream)
 	static char buffer[BUFFER_SIZE_KB];
 	static size_t buffer_len;
 	static size_t buffer_pos;
-
 	if (buffer_pos >= buffer_len)
 	{
 		buffer_len = fread(buffer, sizeof (char), sizeof buffer, stream);
