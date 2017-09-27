@@ -33,7 +33,7 @@ int next_alpha(FILE* stream)
     int c;
     while ((c = buffer_getc(stream)) != EOF) {
         if (isalpha(c))
-            return tolower(c);
+            return c;
     }
     return EOF;
 }
@@ -86,7 +86,7 @@ size_t print_pt(FILE* pt)
 
     int c;
     while ((c = next_alpha(pt)) != EOF) {
-        col_delim_putc(c, &n);
+        col_delim_putc(tolower(c), &n);
     }
     putchar('\n');
 
@@ -102,6 +102,13 @@ void pad_block(char* block, size_t from_index, char pad_c)
     }
 }
 
+void n_tolower(char *to_lower, size_t n)
+{
+    for (size_t index = 0; index < n; ++index) {
+        to_lower[index] = tolower(to_lower[index]);
+    }
+}
+
 size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
 {
     size_t n = 0;
@@ -114,6 +121,7 @@ size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
 
     int read;
     while ((read = next_n_alphas(block, b_size, pt)) > 0) {
+        n_tolower(block, b_size);
         if (read < b_size)
             pad_block(block, read, 'x');
         encrypt_block(block, prev, key);
