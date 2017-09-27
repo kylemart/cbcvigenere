@@ -50,6 +50,22 @@ size_t next_n_alphas(char* dest, size_t n, FILE* stream)
     return index;
 }
 
+void n_tolower(char *to_lower, size_t n)
+{
+    for (size_t index = 0; index < n; ++index) {
+        to_lower[index] = tolower(to_lower[index]);
+    }
+}
+
+int are_lower(const char* str)
+{
+    for (size_t index = 0; str[index] != '\0'; ++index) {
+        if (!islower(str[index]))
+            return 0;
+    }
+    return 1;
+}
+
 void col_delim_putc(char c, size_t* n)
 {
     if (*n > 0 && *n % TEXT_WIDTH == 0)
@@ -78,34 +94,10 @@ void encrypt_block(char* block, const char* prev, const char* key)
     }
 }
 
-size_t print_pt(FILE* pt)
-{
-    size_t n = 0;
-
-    long int pt_offset = ftell(pt);
-
-    int c;
-    while ((c = next_alpha(pt)) != EOF) {
-        col_delim_putc(tolower(c), &n);
-    }
-    putchar('\n');
-
-    fseek(pt, pt_offset, SEEK_SET);
-
-    return n;
-}
-
 void pad_block(char* block, size_t from_index, char pad_c)
 {
     for (size_t index = from_index; block[index] != '\0'; ++index) {
         block[index] = pad_c;
-    }
-}
-
-void n_tolower(char *to_lower, size_t n)
-{
-    for (size_t index = 0; index < n; ++index) {
-        to_lower[index] = tolower(to_lower[index]);
     }
 }
 
@@ -138,13 +130,21 @@ size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
     return n;
 }
 
-int are_lower(const char* str)
+size_t print_pt(FILE* pt)
 {
-    for (size_t index = 0; str[index] != '\0'; ++index) {
-        if (!islower(str[index]))
-            return 0;
+    size_t n = 0;
+
+    long int pt_offset = ftell(pt);
+
+    int c;
+    while ((c = next_alpha(pt)) != EOF) {
+        col_delim_putc(tolower(c), &n);
     }
-    return 1;
+    putchar('\n');
+
+    fseek(pt, pt_offset, SEEK_SET);
+
+    return n;
 }
 
 int main(int argc, char* argv[])
