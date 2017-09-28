@@ -50,7 +50,7 @@ size_t next_n_alphas(char* dest, size_t n, FILE* stream)
     return index;
 }
 
-void n_tolower(char *to_lower, size_t n)
+void n_tolower(char* to_lower, size_t n)
 {
     for (size_t index = 0; index < n; ++index) {
         to_lower[index] = tolower(to_lower[index]);
