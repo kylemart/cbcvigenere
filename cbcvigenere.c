@@ -94,11 +94,9 @@ void encrypt_block(char* block, const char* prev, const char* key)
     }
 }
 
-void pad_block(char* block, size_t from_index, char pad_c)
+void pad_block(char* block, size_t b_size, size_t from_index, char pad_c)
 {
-    for (size_t index = from_index; block[index] != '\0'; ++index) {
-        block[index] = pad_c;
-    }
+    memset(block + from_index, pad_c, b_size - from_index);
 }
 
 size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
@@ -111,11 +109,11 @@ size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
     char* prev = calloc(b_size + 1, sizeof (char));
     strcpy(prev, iv);
 
-    int read;
+    size_t read;
     while ((read = next_n_alphas(block, b_size, pt)) > 0) {
         n_tolower(block, b_size);
         if (read < b_size)
-            pad_block(block, read, 'x');
+            pad_block(block, b_size, read, 'x');
         encrypt_block(block, prev, key);
         print_block(block, &n);
         strcpy(prev, block);
