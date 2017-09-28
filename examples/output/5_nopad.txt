@@ -1,0 +1,16 @@
+CBC Vigenere by Kyle Martinez
+Plaintext file name: test/input/5_nopad.txt
+Vigenere keyword: secret
+Initialization vector: pdqist
+
+Clean Plaintext:
+
+simple
+
+Ciphertext:
+
+zpeohq
+
+Number of characters in clean plaintext file: 6
+Block size = 6
+Number of pad characters added: 0
