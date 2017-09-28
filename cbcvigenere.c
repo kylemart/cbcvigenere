@@ -83,8 +83,8 @@ void print_block(const char* block, size_t* n)
 
 char xor(char x, char y)
 {
-    const int ALPHABET_LENGTH = 26;
-    return (char) (((x - 'a' + y - 'a') % ALPHABET_LENGTH) + 'a');
+    const char ALPHABET_LENGTH = 26;
+    return ((x - 'a' + y - 'a') % ALPHABET_LENGTH) + 'a';
 }
 
 void encrypt_block(char* block, const char* prev, const char* key)
