@@ -109,11 +109,11 @@ size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
     char* prev = calloc(b_size + 1, sizeof (char));
     strcpy(prev, iv);
 
-    size_t read;
-    while ((read = next_n_alphas(block, b_size, pt)) > 0) {
-        n_tolower(block, read);
-        if (read < b_size)
-            pad_block(block, b_size, read, 'x');
+    size_t n_read;
+    while ((n_read = next_n_alphas(block, b_size, pt)) > 0) {
+        n_tolower(block, n_read);
+        if (n_read < b_size)
+            pad_block(block, b_size, n_read, 'x');
         encrypt_block(block, prev, key);
         print_block(block, &n);
         strcpy(prev, block);
