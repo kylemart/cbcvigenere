@@ -111,7 +111,7 @@ size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
 
     size_t read;
     while ((read = next_n_alphas(block, b_size, pt)) > 0) {
-        n_tolower(block, b_size);
+        n_tolower(block, read);
         if (read < b_size)
             pad_block(block, b_size, read, 'x');
         encrypt_block(block, prev, key);
