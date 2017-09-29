@@ -11,6 +11,7 @@
 
 #define AUTHOR "Kyle Martinez"
 #define TEXT_WIDTH 80
+#define BLOCK_PADDING 'x'
 #define BUFFER_CAPACITY_KB (5 * 1024)
 
 int buffer_getc(FILE* stream)
@@ -50,13 +51,6 @@ size_t next_n_alphas(char* dest, size_t n, FILE* stream)
     return index;
 }
 
-void n_tolower(char* to_lower, size_t n)
-{
-    for (size_t index = 0; index < n; ++index) {
-        to_lower[index] = tolower(to_lower[index]);
-    }
-}
-
 int are_lower(const char* str)
 {
     for (size_t index = 0; str[index] != '\0'; ++index) {
@@ -94,6 +88,14 @@ void encrypt_block(char* block, const char* prev, const char* key)
     }
 }
 
+void format_block(char* block, size_t n_read, size_t b_size)
+{
+    for (size_t index = 0; index < n_read; ++index) {
+        block[index] = tolower(block[index]);
+    }
+    memset(block + n_read, BLOCK_PADDING, b_size - n_read);
+}
+
 size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
 {
     size_t n = 0;
@@ -106,9 +108,7 @@ size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
 
     size_t n_read;
     while ((n_read = next_n_alphas(block, b_size, pt)) > 0) {
-        n_tolower(block, n_read);
-        if (n_read < b_size)
-            memset(block + n_read, 'x', b_size - n_read);
+        format_block(block, n_read, b_size);
         encrypt_block(block, prev, key);
         print_block(block, &n);
         strcpy(prev, block);
