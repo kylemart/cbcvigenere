@@ -102,21 +102,21 @@ size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
 
     long int pt_offset = ftell(pt);
 
-    char* block = calloc(b_size + 1, sizeof (char));
-    char* prev = calloc(b_size + 1, sizeof (char));
-    strcpy(prev, iv);
+    char* current = calloc(b_size + 1, sizeof (char));
+    char* previous = calloc(b_size + 1, sizeof (char));
+    strcpy(previous, iv);
 
     size_t n_read;
-    while ((n_read = next_n_alphas(block, b_size, pt)) > 0) {
-        format_block(block, n_read, b_size);
-        encrypt_block(block, prev, key);
-        print_block(block, &n);
-        strcpy(prev, block);
+    while ((n_read = next_n_alphas(current, b_size, pt)) > 0) {
+        format_block(current, n_read, b_size);
+        encrypt_block(current, previous, key);
+        print_block(current, &n);
+        strcpy(previous, current);
     }
     putchar('\n');
 
-    free(block);
-    free(prev);
+    free(current);
+    free(previous);
 
     fseek(pt, pt_offset, SEEK_SET);
 
