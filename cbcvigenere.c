@@ -94,11 +94,6 @@ void encrypt_block(char* block, const char* prev, const char* key)
     }
 }
 
-void pad_block(char* block, size_t b_size, size_t from_index, char pad_c)
-{
-    memset(block + from_index, pad_c, b_size - from_index);
-}
-
 size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
 {
     size_t n = 0;
@@ -113,7 +108,7 @@ size_t print_ct(const char* key, const char* iv, size_t b_size, FILE* pt)
     while ((n_read = next_n_alphas(block, b_size, pt)) > 0) {
         n_tolower(block, n_read);
         if (n_read < b_size)
-            pad_block(block, b_size, n_read, 'x');
+            memset(block + n_read, 'x', b_size - n_read);
         encrypt_block(block, prev, key);
         print_block(block, &n);
         strcpy(prev, block);
