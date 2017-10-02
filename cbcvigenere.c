@@ -1,9 +1,3 @@
-//------------------------------------------------------------------
-// University of Central Florida
-// CIS3360 - Fall 2017
-// Program Author: Kyle Martinez
-//------------------------------------------------------------------
-
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
