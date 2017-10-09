@@ -39,10 +39,10 @@ size_t next_n_alphas(char *dest, size_t n, FILE *stream)
     for (index = 0; index < n; ++index) {
         int c = next_alpha(stream);
         if (c == EOF)
-            break;
+            return index;
         dest[index] = c;
     }
-    return index;
+    return n;
 }
 
 int are_lower(const char *str)
