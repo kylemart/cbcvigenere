@@ -35,8 +35,7 @@ int next_alpha(FILE *stream)
 
 size_t next_n_alphas(char *dest, size_t n, FILE *stream)
 {
-    size_t index;
-    for (index = 0; index < n; ++index) {
+    for (size_t index = 0; index < n; ++index) {
         int c = next_alpha(stream);
         if (c == EOF)
             return index;
